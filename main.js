@@ -23,13 +23,17 @@ document.addEventListener("DOMContentLoaded", () => {
     scrollReactive: false,
     scrollStrength: 0.6,
     field: {
-      octaves: 5,
-      lacunarity: 2.1,
-      gain: 0.55,
+      octaves: 2,
+      lacunarity: 1.3,
+      gain: 0.5,
       warpStrength: 0.35,
       seed: [12.3, 4.7],
       flow: [0.03, -0.01],
       angle: 0.2,
+      noiseType: "value",
+      fractalType: "fbm",
+      boxFreq: 6,
+      debug: 0,
     },
     pixelRatio: "auto",
     maxFPS: 60,
@@ -47,4 +51,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const effect = spectraGL(params);
 
   window.__spectra = effect;
+
+  if (effect) {
+    const presets = {
+      "1": { noiseType: "value", fractalType: "fbm" },
+      "2": { noiseType: "simplex", fractalType: "fbm" },
+      "3": { noiseType: "worley", fractalType: "ridged" },
+      "4": { noiseType: "box", fractalType: "none", boxFreq: 6 },
+    };
+    let debug = params.field.debug || 0;
+
+    window.addEventListener("keydown", (event) => {
+      const key = event.key.toLowerCase();
+      if (presets[key]) {
+        effect.updateOptions({ field: presets[key] });
+        return;
+      }
+      if (key === "d") {
+        debug = (debug + 1) % 4;
+        effect.updateOptions({ field: { debug } });
+      }
+    });
+  }
 });
