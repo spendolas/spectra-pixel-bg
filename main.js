@@ -6,23 +6,23 @@ const DEFAULT_OPTIONS = {
   colorBlend: "smooth",
   colorBalance: [1, 1, 1, 1, 1, 1, 1],
   meshDetail: 16,
-  foldIntensity: 4,
-  foldScale: 3,
-  foldSpeed: 1,
+  foldIntensity: 8,
+  foldScale: 5,
+  foldSpeed: 5,
   rimLight: false,
-  rimIntensity: 0.6,
+  rimIntensity: 0.0,
   rimColor: "#B19EEF",
-  rimFalloff: 1.2,
-  speed: 0.4,
-  direction: "auto",
-  grain: 0.2,
+  rimFalloff: 0.5,
+  speed: .1,
+  direction: "up",
+  grain: 0,
   reactive: false,
   mouseRadius: 0.4,
   scrollReactive: false,
   field: {
-    octaves: 2,
+    octaves: .5,
     lacunarity: 2,
-    gain: 0.5,
+    gain: 0.0,
     warpStrength: 0.2,
     seed: [0, 0],
     flow: [0.02, -0.01],
@@ -44,7 +44,7 @@ const DEFAULT_OPTIONS = {
     radius: null,
     position: "outside",
   },
-  helper: false,
+  helper: 0,
 };
 
 const isObject = (value) =>
@@ -97,11 +97,16 @@ const pickRandom = (list) => {
   return list[Math.floor(Math.random() * list.length)] || null;
 };
 
-const getFromURL = (param, list) => {
-  const params = new URLSearchParams(window.location.search);
-  const name = params.get(param);
-  if (!name) return null;
-  return pickByName(list, name);
+const pickRandomExcluding = (list, exclude) => {
+  if (list.length === 0) return null;
+  if (list.length === 1) return list[0];
+  let next = exclude;
+  let guard = 0;
+  while (next === exclude && guard < 10) {
+    next = pickRandom(list);
+    guard += 1;
+  }
+  return next || exclude;
 };
 
 const paletteToOptions = (palette) => {
@@ -113,15 +118,21 @@ const paletteToOptions = (palette) => {
   };
 };
 
+const randomSeed = () => [
+  Number((Math.random() * 200).toFixed(2)),
+  Number((Math.random() * 200).toFixed(2)),
+];
+
 const buildOptions = (preset, palette) => {
   let merged = deepMerge(DEFAULT_OPTIONS, preset?.options || {});
   merged = deepMerge(merged, paletteToOptions(palette));
+  merged = deepMerge(merged, { field: { seed: randomSeed() } });
   return merged;
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  let chosenPreset = getFromURL("preset", safePresets) || pickRandom(safePresets);
-  let chosenPalette = getFromURL("palette", safePalettes) || pickRandom(safePalettes);
+  let chosenPreset = pickRandom(safePresets);
+  let chosenPalette = pickRandom(safePalettes);
 
   const effect = spectraGL({
     target: "#bg",
@@ -133,19 +144,44 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__chosenPalette = chosenPalette;
 
   if (effect) {
+    let showPresetLabel = false;
+    const presetLabel = document.createElement("div");
+    presetLabel.style.position = "fixed";
+    presetLabel.style.inset = "0";
+    presetLabel.style.zIndex = "999999";
+    presetLabel.style.display = "flex";
+    presetLabel.style.alignItems = "center";
+    presetLabel.style.justifyContent = "center";
+    presetLabel.style.fontSize = "clamp(48px, 12vw, 180px)";
+    presetLabel.style.fontWeight = "700";
+    presetLabel.style.letterSpacing = "0.02em";
+    presetLabel.style.textTransform = "uppercase";
+    presetLabel.style.color = "#ffffff";
+    // presetLabel.style.mixBlendMode = "exclusion";
+    presetLabel.style.pointerEvents = "none";
+    presetLabel.style.opacity = "0";
+    presetLabel.style.transition = "opacity 120ms ease";
+    presetLabel.textContent = chosenPreset?.name || "Default";
+    document.body.appendChild(presetLabel);
+
     window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
       if (key === "r") {
-        const nextPreset = pickRandom(safePresets);
-        const nextPalette = pickRandom(safePalettes);
+        const nextPreset = pickRandomExcluding(safePresets, chosenPreset);
+        const nextPalette = pickRandomExcluding(safePalettes, chosenPalette);
         chosenPreset = nextPreset || chosenPreset;
         chosenPalette = nextPalette || chosenPalette;
       } else if (key === "p") {
-        const nextPalette = pickRandom(safePalettes);
+        const nextPalette = pickRandomExcluding(safePalettes, chosenPalette);
         chosenPalette = nextPalette || chosenPalette;
       } else if (key === "o") {
-        const nextPreset = pickRandom(safePresets);
+        const nextPreset = pickRandomExcluding(safePresets, chosenPreset);
         chosenPreset = nextPreset || chosenPreset;
+      } else if (key === "q") {
+        showPresetLabel = !showPresetLabel;
+        presetLabel.textContent = chosenPreset?.name || "Default";
+        presetLabel.style.opacity = showPresetLabel ? "1" : "0";
+        return;
       } else {
         return;
       }
@@ -155,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       effect.updateOptions(nextOptions);
       window.__chosenPreset = chosenPreset;
       window.__chosenPalette = chosenPalette;
+      presetLabel.textContent = chosenPreset?.name || "Default";
     });
   }
 });
