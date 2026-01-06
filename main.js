@@ -1,4 +1,4 @@
-import { PRESETS } from "./presets.js";
+import { PRESETS, PALETTES } from "./presets.js";
 
 const DEFAULT_OPTIONS = {
   mode: "pixel",
@@ -47,56 +47,114 @@ const DEFAULT_OPTIONS = {
   helper: false,
 };
 
-const safePresets = Array.isArray(PRESETS)
-  ? PRESETS.filter(
-      (preset) =>
-        preset &&
-        typeof preset.name === "string" &&
-        preset.name.length > 0 &&
-        preset.options &&
-        typeof preset.options === "object",
-    )
-  : [];
+const isObject = (value) =>
+  value && typeof value === "object" && !Array.isArray(value);
 
-const pickPresetByName = (name) =>
-  safePresets.find((preset) => preset.name === name) || null;
-
-const pickRandomPreset = () => {
-  if (safePresets.length === 0) return null;
-  const index = Math.floor(Math.random() * safePresets.length);
-  return safePresets[index] || null;
+const deepMerge = (base, override) => {
+  if (!isObject(base)) return override;
+  const result = { ...base };
+  if (!isObject(override)) return result;
+  Object.keys(override).forEach((key) => {
+    const baseValue = result[key];
+    const overrideValue = override[key];
+    if (isObject(baseValue) && isObject(overrideValue)) {
+      result[key] = deepMerge(baseValue, overrideValue);
+    } else {
+      result[key] = overrideValue;
+    }
+  });
+  return result;
 };
 
-const getPresetFromURL = () => {
+const safeList = (list, validator) =>
+  Array.isArray(list) ? list.filter(validator) : [];
+
+const safePresets = safeList(PRESETS, (preset) => {
+  return (
+    preset &&
+    typeof preset.name === "string" &&
+    preset.name.length > 0 &&
+    preset.options &&
+    typeof preset.options === "object"
+  );
+});
+
+const safePalettes = safeList(PALETTES, (palette) => {
+  return (
+    palette &&
+    typeof palette.name === "string" &&
+    palette.name.length > 0 &&
+    Array.isArray(palette.colors) &&
+    palette.colors.length > 0
+  );
+});
+
+const pickByName = (list, name) =>
+  list.find((entry) => entry.name === name) || null;
+
+const pickRandom = (list) => {
+  if (list.length === 0) return null;
+  return list[Math.floor(Math.random() * list.length)] || null;
+};
+
+const getFromURL = (param, list) => {
   const params = new URLSearchParams(window.location.search);
-  const name = params.get("preset");
+  const name = params.get(param);
   if (!name) return null;
-  return pickPresetByName(name);
+  return pickByName(list, name);
+};
+
+const paletteToOptions = (palette) => {
+  if (!palette) return {};
+  return {
+    colors: palette.colors,
+    ...(palette.colorBlend ? { colorBlend: palette.colorBlend } : {}),
+    ...(palette.colorBalance ? { colorBalance: palette.colorBalance } : {}),
+  };
+};
+
+const buildOptions = (preset, palette) => {
+  let merged = deepMerge(DEFAULT_OPTIONS, preset?.options || {});
+  merged = deepMerge(merged, paletteToOptions(palette));
+  return merged;
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  const presetFromUrl = getPresetFromURL();
-  const selectedPreset = presetFromUrl || pickRandomPreset();
-  const selectedOptions = selectedPreset ? selectedPreset.options : DEFAULT_OPTIONS;
+  let chosenPreset = getFromURL("preset", safePresets) || pickRandom(safePresets);
+  let chosenPalette = getFromURL("palette", safePalettes) || pickRandom(safePalettes);
 
   const effect = spectraGL({
     target: "#bg",
-    ...selectedOptions,
+    ...buildOptions(chosenPreset, chosenPalette),
   });
 
   window.__spectra = effect;
-  window.__preset = selectedPreset;
+  window.__chosenPreset = chosenPreset;
+  window.__chosenPalette = chosenPalette;
 
-  if (effect && safePresets.length > 0) {
+  if (effect) {
     window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
       if (key === "r") {
-        const nextPreset = pickRandomPreset();
-        if (nextPreset) {
-          window.__preset = nextPreset;
-          effect.updateOptions(nextPreset.options);
-        }
+        const nextPreset = pickRandom(safePresets);
+        const nextPalette = pickRandom(safePalettes);
+        chosenPreset = nextPreset || chosenPreset;
+        chosenPalette = nextPalette || chosenPalette;
+      } else if (key === "p") {
+        const nextPalette = pickRandom(safePalettes);
+        chosenPalette = nextPalette || chosenPalette;
+      } else if (key === "o") {
+        const nextPreset = pickRandom(safePresets);
+        chosenPreset = nextPreset || chosenPreset;
+      } else {
+        return;
       }
+
+      if (safePresets.length === 0 && safePalettes.length === 0) return;
+      const nextOptions = buildOptions(chosenPreset, chosenPalette);
+      effect.updateOptions(nextOptions);
+      window.__chosenPreset = chosenPreset;
+      window.__chosenPalette = chosenPalette;
     });
   }
 });
