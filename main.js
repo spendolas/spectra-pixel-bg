@@ -23,17 +23,19 @@ document.addEventListener("DOMContentLoaded", () => {
     scrollReactive: false,
     scrollStrength: 0.6,
     field: {
-      octaves: 2,
-      lacunarity: 1.3,
-      gain: 0.5,
-      warpStrength: 0.35,
+      octaves: 1,
+      lacunarity: 3,
+      gain: 0.2,
+      warpStrength: 0.0,
       seed: [12.3, 4.7],
       flow: [0.03, -0.01],
       angle: 0.2,
       noiseType: "value",
-      fractalType: "fbm",
+      fractalType: "none",
       boxFreq: 6,
       debug: 0,
+      min: 0.2,
+      max: 0.8,
     },
     pixelRatio: "auto",
     maxFPS: 60,
@@ -45,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       radius: null,
       position: "outside",
     },
-    helper: false,
+    helper: true,
   };
 
   const effect = spectraGL(params);
@@ -60,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "4": { noiseType: "box", fractalType: "none", boxFreq: 6 },
     };
     let debug = params.field.debug || 0;
+    let fieldMin = params.field.min ?? 0.2;
+    let fieldMax = params.field.max ?? 0.8;
 
     window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
@@ -68,8 +72,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (key === "d") {
-        debug = (debug + 1) % 4;
+        debug = (debug + 1) % 5;
         effect.updateOptions({ field: { debug } });
+        return;
+      }
+      if (key === "[") {
+        fieldMin = Math.max(0, fieldMin - 0.02);
+        if (fieldMin >= fieldMax) fieldMin = Math.max(0, fieldMax - 0.02);
+        effect.updateOptions({ field: { min: fieldMin, max: fieldMax } });
+        return;
+      }
+      if (key === "]") {
+        fieldMax = Math.min(1, fieldMax + 0.02);
+        if (fieldMax <= fieldMin) fieldMax = Math.min(1, fieldMin + 0.02);
+        effect.updateOptions({ field: { min: fieldMin, max: fieldMax } });
+        return;
       }
     });
   }
