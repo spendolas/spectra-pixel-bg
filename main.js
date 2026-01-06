@@ -22,9 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseRadius: 0.4,
     scrollReactive: false,
     scrollStrength: 0.6,
-    pixelRatio: "2",
+    pixelRatio: "auto",
     maxFPS: 60,
-    qualityPreset: "high",
+    qualityPreset: "low",
     border: {
       enabled: false,
       width: 2,
