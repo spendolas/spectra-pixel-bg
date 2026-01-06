@@ -1,92 +1,101 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const params = {
-    target: "#bg",
-    mode: "pixel",
-    colors: ["#0a0a12", "#B19EEF", "#5227FF", "#ff00f7"],
-    colorBlend: "smooth",
-    colorBalance: [1, 1, 1, 1, 1, 1, 1],
-    meshDetail: 16,
-    foldIntensity: 5,
-    foldScale: 5,
-    foldSpeed: 2,
-    rimLight: false,
-    rimIntensity: 1,
-    rimColor: "#B19EEF",
-    rimFalloff: 0.7,
-    speed: 0.2,
-    direction: "up",
-    grain: 0.3,
-    reactive: false,
-    reactiveStrength: 0.8,
-    displacementStrength: 0.3,
-    mouseRadius: 0.4,
-    scrollReactive: false,
-    scrollStrength: 0.6,
-    field: {
-      octaves: 1,
-      lacunarity: 3,
-      gain: 0.2,
-      warpStrength: 0.0,
-      seed: [12.3, 4.7],
-      flow: [0.03, -0.01],
-      angle: 0.2,
-      noiseType: "value",
-      fractalType: "none",
-      boxFreq: 6,
-      debug: 0,
-      min: 0.2,
-      max: 0.8,
-    },
-    pixelRatio: "auto",
-    maxFPS: 60,
-    qualityPreset: "low",
-    border: {
-      enabled: false,
-      width: 2,
-      radiusFromElement: true,
-      radius: null,
-      position: "outside",
-    },
-    helper: true,
-  };
+import { PRESETS } from "./presets.js";
 
-  const effect = spectraGL(params);
+const DEFAULT_OPTIONS = {
+  mode: "pixel",
+  colors: ["#0a0a12", "#B19EEF", "#5227FF", "#ff00f7"],
+  colorBlend: "smooth",
+  colorBalance: [1, 1, 1, 1, 1, 1, 1],
+  meshDetail: 16,
+  foldIntensity: 4,
+  foldScale: 3,
+  foldSpeed: 1,
+  rimLight: false,
+  rimIntensity: 0.6,
+  rimColor: "#B19EEF",
+  rimFalloff: 1.2,
+  speed: 0.4,
+  direction: "auto",
+  grain: 0.2,
+  reactive: false,
+  mouseRadius: 0.4,
+  scrollReactive: false,
+  field: {
+    octaves: 2,
+    lacunarity: 2,
+    gain: 0.5,
+    warpStrength: 0.2,
+    seed: [0, 0],
+    flow: [0.02, -0.01],
+    angle: 0,
+    noiseType: "value",
+    fractalType: "fbm",
+    boxFreq: 6,
+    debug: 0,
+    min: 0.2,
+    max: 0.8,
+  },
+  pixelRatio: "auto",
+  maxFPS: 60,
+  qualityPreset: "low",
+  border: {
+    enabled: false,
+    width: 2,
+    radiusFromElement: true,
+    radius: null,
+    position: "outside",
+  },
+  helper: false,
+};
+
+const safePresets = Array.isArray(PRESETS)
+  ? PRESETS.filter(
+      (preset) =>
+        preset &&
+        typeof preset.name === "string" &&
+        preset.name.length > 0 &&
+        preset.options &&
+        typeof preset.options === "object",
+    )
+  : [];
+
+const pickPresetByName = (name) =>
+  safePresets.find((preset) => preset.name === name) || null;
+
+const pickRandomPreset = () => {
+  if (safePresets.length === 0) return null;
+  const index = Math.floor(Math.random() * safePresets.length);
+  return safePresets[index] || null;
+};
+
+const getPresetFromURL = () => {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get("preset");
+  if (!name) return null;
+  return pickPresetByName(name);
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const presetFromUrl = getPresetFromURL();
+  const selectedPreset = presetFromUrl || pickRandomPreset();
+  const selectedOptions = selectedPreset ? selectedPreset.options : DEFAULT_OPTIONS;
+
+  const effect = spectraGL({
+    target: "#bg",
+    ...selectedOptions,
+  });
 
   window.__spectra = effect;
+  window.__preset = selectedPreset;
 
-  if (effect) {
-    const presets = {
-      "1": { noiseType: "value", fractalType: "fbm" },
-      "2": { noiseType: "simplex", fractalType: "fbm" },
-      "3": { noiseType: "worley", fractalType: "ridged" },
-      "4": { noiseType: "box", fractalType: "none", boxFreq: 6 },
-    };
-    let debug = params.field.debug || 0;
-    let fieldMin = params.field.min ?? 0.2;
-    let fieldMax = params.field.max ?? 0.8;
-
+  if (effect && safePresets.length > 0) {
     window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
-      if (presets[key]) {
-        effect.updateOptions({ field: presets[key] });
-        return;
-      }
-      if (key === "d") {
-        debug = (debug + 1) % 5;
-        effect.updateOptions({ field: { debug } });
-        return;
-      }
-      if (key === "[") {
-        fieldMin = Math.max(0, fieldMin - 0.02);
-        if (fieldMin >= fieldMax) fieldMin = Math.max(0, fieldMax - 0.02);
-        effect.updateOptions({ field: { min: fieldMin, max: fieldMax } });
-        return;
-      }
-      if (key === "]") {
-        fieldMax = Math.min(1, fieldMax + 0.02);
-        if (fieldMax <= fieldMin) fieldMax = Math.min(1, fieldMin + 0.02);
-        effect.updateOptions({ field: { min: fieldMin, max: fieldMax } });
-        return;
+      if (key === "r") {
+        const nextPreset = pickRandomPreset();
+        if (nextPreset) {
+          window.__preset = nextPreset;
+          effect.updateOptions(nextPreset.options);
+        }
       }
     });
   }
