@@ -7,10 +7,10 @@
 
 ## Repo Structure
 - `src/`: editable sources
-  - `src/index.html` (loads `spectraGLpp.js` and `main.js` as module)
+  - `src/index.html` (loads `spectraGL-noisekit.pp.js` and `main.js` as module)
   - `src/main.js`
   - `src/presets.js`
-  - `src/spectraGLpp.js` (unminified library)
+  - `src/spectraGL-noisekit.pp.js` (unminified library)
 - `dist/`: release assets
   - `dist/index.html` (loads `spectraGL-noisekit.min.js` and `main.js` as module)
   - `dist/main.js`
@@ -28,7 +28,7 @@
 
 ## Release Steps
 1) Work on `fork` in `src/`.
-2) Run `scripts/release.sh` to rebuild `dist/` (minifies `spectraGLpp.js`).
+2) Run `scripts/release.sh` to rebuild `dist/` (minifies `spectraGL-noisekit.pp.js`).
 3) Run `scripts/publish_release.sh` to:
    - build release into a temp dir,
    - switch to `main`,
