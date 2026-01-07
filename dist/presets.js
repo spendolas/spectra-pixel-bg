@@ -72,14 +72,26 @@ export const PALETTES = [
 //   },
   {
     name: "Cobalt Drift",
-    colors: ["#05070d", "#233b6a", "#3c6fff", "#8cc6ff", "#a9bad6ff"],
+    colors: ["#05070d", "#233b6a", "#3c6fff", "#8cc6ff", "#a9bad6"],
   },
   {
     name: "Violet Ember",
-    colors: ["#0a0710", "#2a0f3b", "#6a1fd1", "#ff6ad5", "#f4b9e1ff"],
+    colors: ["#0a0710", "#2a0f3b", "#6a1fd1", "#ff6ad5", "#f4b9e1"],
   },
   {
     name: "Teal Afterglow",
-    colors: ["#04080a", "#0f2f3a", "#1c9fa6", "#69c0b3ff", "#d4ede1ff"],
+    colors: ["#04080a", "#0f2f3a", "#1c9fa6", "#69c0b3", "#d4ede1"],
+  },
+  {
+    name: "Solar Ember",
+    colors: ["#100605", "#3b0f0a", "#88271a", "#bd5c24", "#ffd18a"],
+  },
+  {
+    name: "Citrus Pulse",
+    colors: ["#0f0705", "#3a1e0c", "#7a3f16", "#9c521d", "#d6a05c"],
+  },
+  {
+    name: "Rose Heat",
+    colors: ["#120507", "#3b0a18", "#a3173f", "#ff4b6e", "#ffc0c8"],
   },
 ];

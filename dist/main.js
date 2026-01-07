@@ -123,10 +123,11 @@ const randomSeed = () => [
   Number((Math.random() * 200).toFixed(2)),
 ];
 
-const buildOptions = (preset, palette) => {
+const buildOptions = (preset, palette, { seed } = {}) => {
   let merged = deepMerge(DEFAULT_OPTIONS, preset?.options || {});
   merged = deepMerge(merged, paletteToOptions(palette));
-  merged = deepMerge(merged, { field: { seed: randomSeed() } });
+  const nextSeed = Array.isArray(seed) && seed.length === 2 ? seed : randomSeed();
+  merged = deepMerge(merged, { field: { seed: nextSeed } });
   return merged;
 };
 
@@ -166,6 +167,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
+      const currentSeed = Array.isArray(effect.options?.field?.seed)
+        ? effect.options.field.seed
+        : DEFAULT_OPTIONS.field.seed;
+
       if (key === "r") {
         const nextPreset = pickRandomExcluding(safePresets, chosenPreset);
         const nextPalette = pickRandomExcluding(safePalettes, chosenPalette);
@@ -187,7 +192,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (safePresets.length === 0 && safePalettes.length === 0) return;
-      const nextOptions = buildOptions(chosenPreset, chosenPalette);
+      const nextOptions =
+        key === "p"
+          ? buildOptions(chosenPreset, chosenPalette, { seed: currentSeed })
+          : buildOptions(chosenPreset, chosenPalette);
       effect.updateOptions(nextOptions);
       window.__chosenPreset = chosenPreset;
       window.__chosenPalette = chosenPalette;
