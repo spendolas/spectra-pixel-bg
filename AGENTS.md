@@ -12,10 +12,10 @@
   - `src/presets.js`
   - `src/spectraGLpp.js` (unminified library)
 - `dist/`: release assets
-  - `dist/index.html` (loads `spectraGL.min.js` and `main.js` as module)
+  - `dist/index.html` (loads `spectraGL-noisekit.min.js` and `main.js` as module)
   - `dist/main.js`
   - `dist/presets.js`
-  - `dist/spectraGL.min.js`
+  - `dist/spectraGL-noisekit.min.js`
   - `dist/CNAME`
 - `scripts/`: release tooling
   - `scripts/release.sh`

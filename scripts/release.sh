@@ -47,9 +47,9 @@ fi
 
 echo "[release] Minifying spectraGLpp.js"
 if [[ "$MINIFIER" == "uglifyjs" ]]; then
-  $MINIFIER "$SRC_DIR/spectraGLpp.js" -c -m -o "$DIST_DIR/spectraGL.min.js"
+  $MINIFIER "$SRC_DIR/spectraGLpp.js" -c -m -o "$DIST_DIR/spectraGL-noisekit.min.js"
 else
-  $MINIFIER "$SRC_DIR/spectraGLpp.js" --compress --mangle --output "$DIST_DIR/spectraGL.min.js"
+  $MINIFIER "$SRC_DIR/spectraGLpp.js" --compress --mangle --output "$DIST_DIR/spectraGL-noisekit.min.js"
 fi
 
 echo "[release] Rewriting dist/index.html"
@@ -58,7 +58,7 @@ import os
 from pathlib import Path
 path = Path(os.environ["DIST_DIR"]) / "index.html"
 text = path.read_text()
-text = text.replace("spectraGLpp.js", "spectraGL.min.js")
+text = text.replace("spectraGLpp.js", "spectraGL-noisekit.min.js")
 if "./main.js" in text and "type=\"module\"" not in text:
     text = text.replace(
         '<script src="./main.js"></script>',
