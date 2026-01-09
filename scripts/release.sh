@@ -15,8 +15,8 @@ if [ ! -f "$SRC_DIR/index.html" ]; then
   exit 1
 fi
 
-if [ ! -f "$SRC_DIR/spectraGL-noisekit.pp.js" ]; then
-  echo "Missing $SRC_DIR/spectraGL-noisekit.pp.js" >&2
+if [ ! -f "$SRC_DIR/spectraGL-noisekit.js" ]; then
+  echo "Missing $SRC_DIR/spectraGL-noisekit.js" >&2
   exit 1
 fi
 
@@ -45,11 +45,11 @@ else
   exit 1
 fi
 
-echo "[release] Minifying spectraGL-noisekit.pp.js"
+echo "[release] Minifying spectraGL-noisekit.js"
 if [[ "$MINIFIER" == "uglifyjs" ]]; then
-  $MINIFIER "$SRC_DIR/spectraGL-noisekit.pp.js" -c -m -o "$DIST_DIR/spectraGL-noisekit.min.js"
+  $MINIFIER "$SRC_DIR/spectraGL-noisekit.js" -c -m -o "$DIST_DIR/spectraGL-noisekit.min.js"
 else
-  $MINIFIER "$SRC_DIR/spectraGL-noisekit.pp.js" --compress --mangle --output "$DIST_DIR/spectraGL-noisekit.min.js"
+  $MINIFIER "$SRC_DIR/spectraGL-noisekit.js" --compress --mangle --output "$DIST_DIR/spectraGL-noisekit.min.js"
 fi
 
 echo "[release] Rewriting dist/index.html"
@@ -58,7 +58,7 @@ import os
 from pathlib import Path
 path = Path(os.environ["DIST_DIR"]) / "index.html"
 text = path.read_text()
-text = text.replace("spectraGL-noisekit.pp.js", "spectraGL-noisekit.min.js")
+text = text.replace("spectraGL-noisekit.js", "spectraGL-noisekit.min.js")
 if "./main.js" in text and "type=\"module\"" not in text:
     text = text.replace(
         '<script src="./main.js"></script>',
