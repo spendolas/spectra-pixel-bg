@@ -28,7 +28,7 @@ Each phase follows this loop:
 | Node editor | **React Flow** (`@xyflow/react`) | Largest community, custom React nodes, TypeScript-first |
 | State | **Zustand** | Lightweight, pairs naturally with React Flow |
 | Preview renderer | **Raw WebGL** (fullscreen quad) | No Three.js scene needed — two triangles + fragment shader |
-| Styling | **CSS Modules** or **Tailwind** | Decide during Figma phase based on design complexity |
+| Styling | **Tailwind CSS** | Utility-first, fast Figma→code translation, fully flexible visually |
 | Deploy | **GitHub Pages** via `gh-pages` branch | Static output from `vite build` |
 
 ### Why Not Keep the Current Stack?
@@ -269,12 +269,12 @@ The current project (`src/spectraGL-noisekit.js`, presets, palettes) is the **sp
 
 ---
 
-## Open Questions
+## Resolved Decisions
 
-Decisions to make before or during Phase 0:
-
-1. **Repo structure** — Monorepo with the current project, or clean separate repo?
-2. **Styling approach** — CSS Modules vs Tailwind vs vanilla CSS? (Decide after Figma design reveals complexity)
-3. **Domain** — Ship under `spendolas.com/builder`, a subdomain (`builder.spendolas.com`), or a new domain entirely?
-4. **Node preview rendering** — Render each node's mini-preview as a separate tiny WebGL context, or use a single offscreen renderer that cycles through nodes?
-5. **GLSL version** — Target GLSL ES 1.0 (WebGL1, maximum compatibility) or GLSL ES 3.0 (WebGL2, cleaner syntax, more features, 97%+ browser support)?
+| # | Question | Decision | Rationale |
+|---|---|---|---|
+| 1 | Repo structure | **Separate repo** | Different tech stack (React/TS/Vite vs vanilla JS), different deploy pipeline, different purpose. spectra-pixel-bg stays untouched on spendolas.com. |
+| 2 | Styling | **Tailwind CSS** | Utility-first — no visual constraints, any look is achievable. Fast Figma→Claude Code translation. No context-switching between component and CSS files. |
+| 3 | Domain | **GitHub Pages default** (`spendolas.github.io/<repo>`) | No point buying a domain until there's something worth branding. Custom domain can be added later with one CNAME file. |
+| 4 | Node previews | **Single offscreen renderer** | One hidden WebGL context renders each node's preview in sequence, captures to `<img>`. Avoids browser WebGL context limits (8-16). Scales to 100+ nodes. |
+| 5 | GLSL target | **GLSL ES 3.0 / WebGL2** | Cleaner syntax (`in`/`out`), integers, better loops. 97%+ browser support. The 3% gap is dead platforms (old iOS Safari, IE11). |
