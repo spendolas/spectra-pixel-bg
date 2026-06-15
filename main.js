@@ -131,14 +131,62 @@ const buildOptions = (preset, palette, { seed } = {}) => {
   return merged;
 };
 
+const parseHex = (hex) => {
+  if (typeof hex !== "string") return null;
+  let s = hex.trim().replace(/^#/, "");
+  if (s.length === 3) s = s.split("").map((c) => c + c).join("");
+  if (!/^[0-9a-fA-F]{6}$/.test(s)) return null;
+  return [
+    parseInt(s.slice(0, 2), 16),
+    parseInt(s.slice(2, 4), 16),
+    parseInt(s.slice(4, 6), 16),
+  ];
+};
+
+const darkestHex = (colors) => {
+  const fallback = "#0a0a12";
+  if (!Array.isArray(colors)) return fallback;
+  let bestHex = null;
+  let bestLum = Infinity;
+  colors.forEach((hex) => {
+    const rgb = parseHex(hex);
+    if (!rgb) return;
+    const lum = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+    if (lum < bestLum) {
+      bestLum = lum;
+      bestHex = hex;
+    }
+  });
+  return bestHex || fallback;
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   let chosenPreset = pickRandom(safePresets);
   let chosenPalette = pickRandom(safePalettes);
 
+  const initialOpts = buildOptions(chosenPreset, chosenPalette);
+  document.body.style.backgroundColor = darkestHex(initialOpts.colors);
+
   const effect = spectraGL({
     target: "#bg",
-    ...buildOptions(chosenPreset, chosenPalette),
+    ...initialOpts,
   });
+
+  const fadeInCanvas = (attempt = 0) => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) {
+      if (attempt < 60) requestAnimationFrame(() => fadeInCanvas(attempt + 1));
+      return;
+    }
+    canvas.style.opacity = "0";
+    canvas.style.transition = "opacity 800ms ease";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        canvas.style.opacity = "1";
+      });
+    });
+  };
+  fadeInCanvas();
 
   window.__spectra = effect;
   window.__chosenPreset = chosenPreset;
@@ -182,11 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (key === "o") {
         const nextPreset = pickRandomExcluding(safePresets, chosenPreset);
         chosenPreset = nextPreset || chosenPreset;
-      } else if (key === "q") {
-        showPresetLabel = !showPresetLabel;
-        presetLabel.textContent = chosenPreset?.name || "Default";
-        presetLabel.style.opacity = showPresetLabel ? "1" : "0";
-        return;
       } else {
         return;
       }
@@ -197,6 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? buildOptions(chosenPreset, chosenPalette, { seed: currentSeed })
           : buildOptions(chosenPreset, chosenPalette);
       effect.updateOptions(nextOptions);
+      document.body.style.backgroundColor = darkestHex(nextOptions.colors);
       window.__chosenPreset = chosenPreset;
       window.__chosenPalette = chosenPalette;
       presetLabel.textContent = chosenPreset?.name || "Default";

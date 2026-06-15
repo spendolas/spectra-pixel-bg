@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spendolas design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400&display=swap"
+    />
     <style>
+      :root {
+        --gutter: clamp(24px, 2.4vw, 32px);
+        --ease-snap: cubic-bezier(0.16, 1, 0.5, 1);
+        --reveal-dur: 200ms;
+      }
+
       html,
       body {
         width: 100%;
@@ -14,20 +26,273 @@
 
       body {
         overflow: hidden;
-        background: #0a0a12;
+        background-color: #0a0a12;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        font-weight: 400;
+        color: #ffffff;
       }
 
       #bg {
         position: fixed;
         inset: 0;
       }
+
+      .content {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        padding: var(--gutter);
+        pointer-events: none;
+        transition: opacity 400ms ease;
+      }
+
+      .content.idle {
+        opacity: 0.05;
+      }
+
+      .title {
+        margin: 0;
+        max-width: 928px;
+        font-size: clamp(36px, 5.5vw, 80px);
+        line-height: 1.05;
+        font-weight: 400;
+        letter-spacing: 0;
+        opacity: 0;
+      }
+
+      .line {
+        display: block;
+      }
+
+      .line-inner,
+      .reveal-inner {
+        display: inline-block;
+        will-change: transform, opacity, filter;
+        opacity: 0;
+      }
+
+      .reveal {
+        animation: reveal var(--reveal-dur) var(--ease-snap) both;
+      }
+
+      .line-inner.reveal {
+        animation-duration: calc(var(--reveal-dur) * 3);
+      }
+
+      .reveal-inner.reveal {
+        animation-name: reveal-fade;
+      }
+
+      @keyframes reveal {
+        from {
+          transform: translateY(80px);
+          opacity: 0;
+          filter: blur(12px);
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+          filter: blur(0);
+        }
+      }
+
+      @keyframes reveal-fade {
+        from {
+          opacity: 0;
+          filter: blur(12px);
+        }
+        to {
+          opacity: 1;
+          filter: blur(0);
+        }
+      }
+
+      .brand,
+      .locale,
+      .cta {
+        position: absolute;
+        font-size: 16px;
+        line-height: 16px;
+      }
+
+      .brand {
+        top: var(--gutter);
+        right: var(--gutter);
+        white-space: nowrap;
+      }
+
+      .locale {
+        right: var(--gutter);
+        bottom: var(--gutter);
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        white-space: nowrap;
+      }
+
+      .cta {
+        left: var(--gutter);
+        bottom: var(--gutter);
+        color: inherit;
+        text-decoration: none;
+        pointer-events: auto;
+      }
+
+      .reveal-inner {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        .brand {
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
     </style>
   </head>
   <body>
     <div id="bg"></div>
 
+    <main class="content" aria-hidden="false">
+      <h1 class="title">A boutique design collective empowering digital brands with taste and motion.</h1>
+      <span class="brand"><span class="reveal-inner">spendolas</span></span>
+      <span class="locale"><span class="reveal-inner">barcelona and worldwide</span></span>
+      <a class="cta" data-u="hello" data-d="spendolas.com" href="#"><span class="reveal-inner">request a quote</span></a>
+    </main>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="./spectraGL-noisekit.min.js"></script>
     <script type="module" src="./main.js"></script>
+    <script>
+      (() => {
+        const content = document.querySelector(".content");
+        const title = document.querySelector(".title");
+        const cta = document.querySelector(".cta");
+
+        if (cta) {
+          cta.addEventListener("click", () => {
+            const u = cta.dataset.u;
+            const d = cta.dataset.d;
+            cta.href = "mailto:" + u + "@" + d;
+          });
+        }
+
+        const splitTitleIntoLines = () => {
+          if (!title) return [];
+          const originalText = title.dataset.text || title.textContent;
+          title.dataset.text = originalText;
+          title.textContent = "";
+
+          const probe = document.createElement("span");
+          probe.style.visibility = "hidden";
+          title.appendChild(probe);
+
+          const words = originalText.split(/\s+/).filter(Boolean);
+          const groups = [];
+          let currentTop = null;
+          let currentGroup = [];
+
+          words.forEach((word, i) => {
+            const span = document.createElement("span");
+            span.textContent = (i === 0 ? "" : " ") + word;
+            probe.appendChild(span);
+            const top = span.getBoundingClientRect().top;
+            if (currentTop === null) currentTop = top;
+            if (Math.abs(top - currentTop) > 1) {
+              groups.push(currentGroup);
+              currentGroup = [];
+              currentTop = top;
+            }
+            currentGroup.push(word);
+          });
+          if (currentGroup.length) groups.push(currentGroup);
+
+          title.removeChild(probe);
+
+          const lineEls = [];
+          groups.forEach((wordsInLine) => {
+            const line = document.createElement("span");
+            line.className = "line";
+            const inner = document.createElement("span");
+            inner.className = "line-inner";
+            inner.textContent = wordsInLine.join(" ");
+            line.appendChild(inner);
+            title.appendChild(line);
+            lineEls.push(inner);
+          });
+          return lineEls;
+        };
+
+        const startReveal = (lineEls) => {
+          const STAGGER = 100;
+          const ENTRY_DELAY = 1000;
+          const others = [
+            document.querySelector(".brand .reveal-inner"),
+            document.querySelector(".locale .reveal-inner"),
+            document.querySelector(".cta .reveal-inner"),
+          ];
+          const order = [...lineEls, ...others].filter(Boolean);
+
+          order.forEach((el, i) => {
+            el.style.animationDelay = ENTRY_DELAY + i * STAGGER + "ms";
+            el.classList.add("reveal");
+          });
+
+          const totalDur = ENTRY_DELAY + order.length * STAGGER + 200;
+          window.setTimeout(armIdle, totalDur);
+        };
+
+        let idleTimer = null;
+        let idleArmed = false;
+        const IDLE_MS = 10000;
+
+        const wake = () => {
+          if (content && content.classList.contains("idle")) {
+            content.classList.remove("idle");
+          }
+          if (!idleArmed) return;
+          if (idleTimer) window.clearTimeout(idleTimer);
+          idleTimer = window.setTimeout(() => {
+            if (document.hidden) return;
+            if (content) content.classList.add("idle");
+          }, IDLE_MS);
+        };
+
+        const armIdle = () => {
+          idleArmed = true;
+          wake();
+        };
+
+        ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(
+          (evt) => window.addEventListener(evt, wake, { passive: true })
+        );
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            if (idleTimer) window.clearTimeout(idleTimer);
+          } else {
+            wake();
+          }
+        });
+
+        let didRun = false;
+        const run = () => {
+          if (didRun) return;
+          didRun = true;
+          const lineEls = splitTitleIntoLines();
+          if (title) title.style.opacity = "1";
+          startReveal(lineEls);
+        };
+
+        if (document.fonts && document.fonts.load) {
+          Promise.resolve(document.fonts.load('400 1em "Space Grotesk"'))
+            .then(() => document.fonts.ready)
+            .then(run)
+            .catch(() => run());
+          window.setTimeout(run, 4000);
+        } else {
+          window.addEventListener("load", run);
+          window.setTimeout(run, 4000);
+        }
+      })();
+    </script>
   </body>
 </html>
