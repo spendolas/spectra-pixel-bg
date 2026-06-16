@@ -4,17 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spendolas design</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400&display=swap"
-    />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <style>
+      @font-face {
+        font-family: "Space Grotesk";
+        font-style: normal;
+        font-weight: 300 700;
+        font-display: swap;
+        src: url("https://cdn.jsdelivr.net/gh/floriankarsten/space-grotesk@2.0.0/fonts/woff2/SpaceGrotesk%5Bwght%5D.woff2")
+          format("woff2-variations");
+      }
+
       :root {
         --gutter: clamp(24px, 2.4vw, 32px);
         --ease-snap: cubic-bezier(0.16, 1, 0.5, 1);
         --reveal-dur: 200ms;
+        --pointer-radius: 300px;
+      }
+
+      @media (max-width: 768px) {
+        :root {
+          --pointer-radius: 200px;
+        }
       }
 
       html,
@@ -30,6 +41,7 @@
         font-family: "Space Grotesk", system-ui, sans-serif;
         font-weight: 400;
         color: #ffffff;
+        font-feature-settings: "salt" 1;
       }
 
       #bg {
@@ -53,11 +65,12 @@
       .title {
         margin: 0;
         max-width: 928px;
-        font-size: clamp(36px, 5.5vw, 80px);
-        line-height: 1.05;
+        font-size: clamp(36px, calc(4.19vw + 19.66px), 80px);
+        line-height: clamp(40px, calc(3.81vw + 25.14px), 80px);
         font-weight: 400;
-        letter-spacing: 0;
+        letter-spacing: -0.02em;
         opacity: 0;
+        text-wrap: balance;
       }
 
       .line {
@@ -69,6 +82,33 @@
         display: inline-block;
         will-change: transform, opacity, filter;
         opacity: 0;
+      }
+
+      .char {
+        display: inline-block;
+        font-weight: 400;
+        white-space: pre;
+        transition: font-weight 80ms linear;
+      }
+
+      .helper {
+        position: fixed;
+        width: calc(var(--pointer-radius) * 2);
+        height: calc(var(--pointer-radius) * 2);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        -webkit-mask-image: linear-gradient(to right, #000 50%, transparent 50%);
+                mask-image: linear-gradient(to right, #000 50%, transparent 50%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 100%);
+        display: none;
+        z-index: 20;
+        left: 0;
+        top: 0;
+      }
+
+      .helper.on {
+        display: block;
       }
 
       .reveal {
@@ -153,10 +193,11 @@
     <div id="bg"></div>
 
     <main class="content" aria-hidden="false">
-      <h1 class="title">A boutique design collective empowering digital brands with taste and motion.</h1>
+      <h1 class="title">A boutique design collective empowering digital brands with grace and motion.</h1>
       <span class="brand"><span class="reveal-inner">spendolas</span></span>
       <span class="locale"><span class="reveal-inner">barcelona and worldwide</span></span>
       <a class="cta" data-u="hello" data-d="spendolas.com" href="#"><span class="reveal-inner">request a quote</span></a>
+      <div class="helper" aria-hidden="true"></div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -180,22 +221,22 @@
           if (!title) return [];
           const originalText = title.dataset.text || title.textContent;
           title.dataset.text = originalText;
-          title.textContent = "";
 
-          const probe = document.createElement("span");
-          probe.style.visibility = "hidden";
-          title.appendChild(probe);
-
+          title.textContent = originalText;
+          const textNode = title.firstChild;
           const words = originalText.split(/\s+/).filter(Boolean);
           const groups = [];
           let currentTop = null;
           let currentGroup = [];
+          let cursor = 0;
 
-          words.forEach((word, i) => {
-            const span = document.createElement("span");
-            span.textContent = (i === 0 ? "" : " ") + word;
-            probe.appendChild(span);
-            const top = span.getBoundingClientRect().top;
+          words.forEach((word) => {
+            const start = originalText.indexOf(word, cursor);
+            const end = start + word.length;
+            const range = document.createRange();
+            range.setStart(textNode, start);
+            range.setEnd(textNode, end);
+            const top = range.getBoundingClientRect().top;
             if (currentTop === null) currentTop = top;
             if (Math.abs(top - currentTop) > 1) {
               groups.push(currentGroup);
@@ -203,24 +244,222 @@
               currentTop = top;
             }
             currentGroup.push(word);
+            cursor = end;
           });
           if (currentGroup.length) groups.push(currentGroup);
 
-          title.removeChild(probe);
-
+          title.textContent = "";
           const lineEls = [];
           groups.forEach((wordsInLine) => {
             const line = document.createElement("span");
             line.className = "line";
             const inner = document.createElement("span");
             inner.className = "line-inner";
-            inner.textContent = wordsInLine.join(" ");
+            const lineText = wordsInLine.join(" ");
+            for (const ch of lineText) {
+              const charSpan = document.createElement("span");
+              charSpan.className = "char";
+              charSpan.textContent = ch;
+              inner.appendChild(charSpan);
+            }
             line.appendChild(inner);
             title.appendChild(line);
             lineEls.push(inner);
           });
           return lineEls;
         };
+
+        const prefersReducedMotion =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const readRadius = () => {
+          const raw = getComputedStyle(document.documentElement)
+            .getPropertyValue("--pointer-radius")
+            .trim();
+          const v = parseFloat(raw);
+          return isFinite(v) && v > 0 ? v : 300;
+        };
+        let RADIUS = readRadius();
+        const updateRadius = () => {
+          RADIUS = readRadius();
+        };
+        window.addEventListener("resize", updateRadius);
+        window.addEventListener("orientationchange", updateRadius);
+
+        const BASE_WEIGHT = 400;
+        const PEAK_WEIGHT = 700;
+        const MIN_AXIS = 300;
+        const MAX_AXIS = 700;
+        // Cubic-bezier falloff: t=0 at edge → t=1 at center.
+        // y1 negative → slight undershoot (font goes thinner before returning to base).
+        const BEZ_X1 = 0.35;
+        const BEZ_Y1 = -0.35;
+        const BEZ_X2 = 0.45;
+        const BEZ_Y2 = 1.0;
+
+        const makeBezier = (x1, y1, x2, y2) => {
+          const cx = 3 * x1;
+          const bx = 3 * (x2 - x1) - cx;
+          const ax = 1 - cx - bx;
+          const cy = 3 * y1;
+          const by = 3 * (y2 - y1) - cy;
+          const ay = 1 - cy - by;
+          const sampleX = (t) => ((ax * t + bx) * t + cx) * t;
+          const sampleY = (t) => ((ay * t + by) * t + cy) * t;
+          const sampleDX = (t) => (3 * ax * t + 2 * bx) * t + cx;
+          return (x) => {
+            if (x <= 0) return 0;
+            if (x >= 1) return 1;
+            let t = x;
+            for (let i = 0; i < 8; i++) {
+              const dx = sampleX(t) - x;
+              if (Math.abs(dx) < 1e-5) return sampleY(t);
+              const d = sampleDX(t);
+              if (Math.abs(d) < 1e-6) break;
+              t -= dx / d;
+            }
+            let lo = 0,
+              hi = 1;
+            t = x;
+            while (lo < hi) {
+              const cur = sampleX(t);
+              if (Math.abs(cur - x) < 1e-5) return sampleY(t);
+              if (cur < x) lo = t;
+              else hi = t;
+              const next = (lo + hi) / 2;
+              if (next === t) break;
+              t = next;
+            }
+            return sampleY(t);
+          };
+        };
+        const easeBezier = makeBezier(BEZ_X1, BEZ_Y1, BEZ_X2, BEZ_Y2);
+
+        let charCache = [];
+        const dirty = new Set();
+        let pointerX = -9999;
+        let pointerY = -9999;
+        let rafScheduled = false;
+
+        const rebuildCharCache = () => {
+          charCache = [];
+          document.querySelectorAll(".title .char").forEach((el) => {
+            const r = el.getBoundingClientRect();
+            charCache.push({
+              el,
+              cx: r.left + r.width / 2,
+              cy: r.top + r.height / 2,
+            });
+          });
+        };
+
+        const applyWeights = () => {
+          rafScheduled = false;
+          if (prefersReducedMotion) return;
+          const nextDirty = new Set();
+          for (let i = 0; i < charCache.length; i++) {
+            const c = charCache[i];
+            const dx = c.cx - pointerX;
+            const dy = c.cy - pointerY;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d > RADIUS) {
+              if (dirty.has(c.el)) {
+                c.el.style.fontWeight = BASE_WEIGHT;
+              }
+              continue;
+            }
+            const t = 1 - d / RADIUS;
+            const eased = easeBezier(t);
+            let w = Math.round(
+              BASE_WEIGHT + (PEAK_WEIGHT - BASE_WEIGHT) * eased
+            );
+            if (w < MIN_AXIS) w = MIN_AXIS;
+            else if (w > MAX_AXIS) w = MAX_AXIS;
+            c.el.style.fontWeight = w;
+            nextDirty.add(c.el);
+          }
+          dirty.clear();
+          nextDirty.forEach((el) => dirty.add(el));
+        };
+
+        const scheduleApply = () => {
+          if (rafScheduled) return;
+          rafScheduled = true;
+          requestAnimationFrame(applyWeights);
+        };
+
+        const resetWeights = () => {
+          dirty.forEach((el) => {
+            el.style.fontWeight = BASE_WEIGHT;
+          });
+          dirty.clear();
+        };
+
+        const helperEl = document.querySelector(".helper");
+        let firstPointerAfterEntrance = true;
+        const onPointerMove = (e) => {
+          pointerX = e.clientX;
+          pointerY = e.clientY;
+          if (helperEl && helperEl.classList.contains("on")) {
+            helperEl.style.left = pointerX + "px";
+            helperEl.style.top = pointerY + "px";
+          }
+          if (entranceDone) {
+            if (firstPointerAfterEntrance) {
+              firstPointerAfterEntrance = false;
+              rebuildCharCache();
+            }
+            scheduleApply();
+          }
+        };
+        window.addEventListener("pointermove", onPointerMove, { passive: true });
+        window.addEventListener("pointerleave", resetWeights);
+        window.addEventListener("pointercancel", resetWeights);
+        document.addEventListener("mouseleave", resetWeights);
+
+        if (helperEl) {
+          const STOPS = 16;
+          const posStops = [];
+          const negStops = [];
+          for (let i = 0; i <= STOPS; i++) {
+            const s = i / STOPS;
+            const y = easeBezier(1 - s);
+            const pct = (s * 100).toFixed(2) + "%";
+            if (y >= 0) {
+              posStops.push(
+                "rgba(255,255,255," + (y * 0.55).toFixed(3) + ") " + pct
+              );
+              negStops.push("rgba(0,0,0,0) " + pct);
+            } else {
+              posStops.push("rgba(255,255,255,0) " + pct);
+              const dipAlpha = Math.min(0.7, Math.abs(y) * 3);
+              negStops.push(
+                "rgba(0,0,0," + dipAlpha.toFixed(3) + ") " + pct
+              );
+            }
+          }
+          helperEl.style.background =
+            "radial-gradient(circle, " +
+            negStops.join(", ") +
+            "), radial-gradient(circle, " +
+            posStops.join(", ") +
+            ")";
+        }
+
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "`") {
+            if (helperEl) {
+              helperEl.classList.toggle("on");
+              if (helperEl.classList.contains("on")) {
+                helperEl.style.left = pointerX + "px";
+                helperEl.style.top = pointerY + "px";
+              }
+            }
+          }
+        });
+
+        let entranceDone = false;
 
         const startReveal = (lineEls) => {
           const STAGGER = 100;
@@ -237,9 +476,38 @@
             el.classList.add("reveal");
           });
 
-          const totalDur = ENTRY_DELAY + order.length * STAGGER + 200;
-          window.setTimeout(armIdle, totalDur);
+          const titleDur = parseFloat(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--reveal-dur")
+          ) || 200;
+          const lastTitleEnd = ENTRY_DELAY + (lineEls.length - 1) * STAGGER + titleDur * 3;
+          const lastOtherEnd = ENTRY_DELAY + (order.length - 1) * STAGGER + titleDur;
+          const totalDur = Math.max(lastTitleEnd, lastOtherEnd) + 50;
+          window.setTimeout(() => {
+            entranceDone = true;
+            armIdle();
+            requestAnimationFrame(() => {
+              requestAnimationFrame(rebuildCharCache);
+            });
+          }, totalDur);
         };
+
+        let resizeTimer = null;
+        const resplitOnResize = () => {
+          if (!entranceDone) return;
+          if (resizeTimer) window.clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(() => {
+            const newLines = splitTitleIntoLines();
+            newLines.forEach((el) => {
+              el.style.opacity = "1";
+              el.style.filter = "blur(0)";
+              el.style.transform = "none";
+            });
+            rebuildCharCache();
+          }, 150);
+        };
+        window.addEventListener("resize", resplitOnResize);
+        window.addEventListener("orientationchange", resplitOnResize);
 
         let idleTimer = null;
         let idleArmed = false;
