@@ -214,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(presetLabel);
 
     window.addEventListener("keydown", (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
       const key = event.key.toLowerCase();
       const currentSeed = Array.isArray(effect.options?.field?.seed)
         ? effect.options.field.seed
