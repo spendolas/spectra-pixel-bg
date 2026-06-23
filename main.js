@@ -160,12 +160,51 @@ const darkestHex = (colors) => {
   return bestHex || fallback;
 };
 
+const brightestHex = (colors) => {
+  if (!Array.isArray(colors)) return "#FFFFFF";
+  let bestHex = null;
+  let bestLum = -Infinity;
+  colors.forEach((hex) => {
+    const rgb = parseHex(hex);
+    if (!rgb) return;
+    const lum = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+    if (lum > bestLum) {
+      bestLum = lum;
+      bestHex = hex;
+    }
+  });
+  return bestHex || "#FFFFFF";
+};
+
+const mixWithWhite = (hex, whiteAlpha) => {
+  const rgb = parseHex(hex);
+  if (!rgb) return "#FFFFFF";
+  const a = Math.max(0, Math.min(1, whiteAlpha));
+  const mix = (c) => Math.round(a * 255 + (1 - a) * c);
+  const hx = (n) => n.toString(16).padStart(2, "0").toUpperCase();
+  return "#" + hx(mix(rgb[0])) + hx(mix(rgb[1])) + hx(mix(rgb[2]));
+};
+
+// Tinted white: composite the palette's mid color (index 2) under 90% pure
+// white. Index 2 reads more present in the shader than the brighter accent.
+const tintedWhite = (colors) => {
+  const source = (Array.isArray(colors) && colors[2]) || brightestHex(colors);
+  return mixWithWhite(source, 0.9);
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   let chosenPreset = pickRandom(safePresets);
   let chosenPalette = pickRandom(safePalettes);
 
   const initialOpts = buildOptions(chosenPreset, chosenPalette);
-  document.body.style.backgroundColor = darkestHex(initialOpts.colors);
+  document.documentElement.style.setProperty(
+    "--color-surface",
+    darkestHex(initialOpts.colors)
+  );
+  document.documentElement.style.setProperty(
+    "--c-white",
+    tintedWhite(initialOpts.colors)
+  );
 
   const effect = spectraGL({
     target: "#bg",
@@ -241,7 +280,14 @@ document.addEventListener("DOMContentLoaded", () => {
           ? buildOptions(chosenPreset, chosenPalette, { seed: currentSeed })
           : buildOptions(chosenPreset, chosenPalette);
       effect.updateOptions(nextOptions);
-      document.body.style.backgroundColor = darkestHex(nextOptions.colors);
+      document.documentElement.style.setProperty(
+        "--color-surface",
+        darkestHex(nextOptions.colors)
+      );
+      document.documentElement.style.setProperty(
+        "--c-white",
+        tintedWhite(nextOptions.colors)
+      );
       window.__chosenPreset = chosenPreset;
       window.__chosenPalette = chosenPalette;
       presetLabel.textContent = chosenPreset?.name || "Default";
