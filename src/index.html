@@ -20,6 +20,23 @@
         --ease-snap: cubic-bezier(0.16, 1, 0.5, 1);
         --reveal-dur: 200ms;
         --pointer-radius: 300px;
+
+        /* Raw color tokens — mirror figma variable names */
+        --c-white: #F5F7FA;            /* figma: spendolas-white */
+        --c-shader-darkest: #160709;   /* figma: spendolas-shader-darkest (static fallback) */
+
+        /* Semantic tokens — default = dark scheme (Hero, Video).
+           --color-surface is rewritten by JS on init + every preset reroll
+           with the dynamic darkest hex of the active preset. */
+        --color-surface: var(--c-shader-darkest);
+        --color-fg: var(--c-white);
+      }
+
+      .scheme-light {
+        --color-surface: var(--c-white);
+        --color-fg: var(--c-shader-darkest);
+        background-color: var(--color-surface);
+        color: var(--color-fg);
       }
 
       @media (max-width: 768px) {
@@ -37,10 +54,10 @@
 
       body {
         overflow: hidden;
-        background-color: #0a0a12;
+        background-color: var(--color-surface);
         font-family: "Space Grotesk", system-ui, sans-serif;
         font-weight: 400;
-        color: #ffffff;
+        color: var(--color-fg);
         font-feature-settings: "salt" 1;
       }
 

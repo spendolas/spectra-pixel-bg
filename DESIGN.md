@@ -97,13 +97,60 @@ Same for line-height with its own pair of figma values. Use this derivation rath
 
 ## 3. Color
 
-The site doesn't use a static palette. Background is driven by the active spectraGL preset's palette — `darkestHex(preset.colors)` (perceived-luminance min) is written to `document.body.style.backgroundColor` before the shader mounts, then the canvas fades in over it. See `darkestHex()` in `src/main.js`.
+Two figma color variables form a single dark/light pair; scheme flips per module.
 
-Foreground:
-- Text: `#FFFFFF` (per figma — no shadow, no scrim).
-- Idle state: `.content { opacity: 0.05 }` over the shader. Background remains visible at full intensity.
+### Raw tokens (mirror figma variable names)
 
-If a future section needs a fixed palette, add tokens here.
+| CSS var | Hex | Figma variable |
+|---|---|---|
+| `--c-white` | `#F5F7FA` (cool off-white) | `spendolas-white` |
+| `--c-shader-darkest` | `#160709` (warm near-black) | `spendolas-shader-darkest` |
+
+### Semantic tokens (the layer everything else reads)
+
+| CSS var | Default scheme | `.scheme-light` |
+|---|---|---|
+| `--color-surface` | `var(--c-shader-darkest)` (overridden dynamically at runtime — see below) | `var(--c-white)` |
+| `--color-fg` | `var(--c-white)` | `var(--c-shader-darkest)` |
+
+All foreground text inherits `color` from `body { color: var(--color-fg) }`. To flip a module to the inverse scheme, wrap it in a container with `class="scheme-light"` — no per-element color rules needed.
+
+> **Implementation note:** `.scheme-light` also re-declares `background-color: var(--color-surface)` and `color: var(--color-fg)` on itself. Without that, descendants would inherit the **resolved** color from `body` (which was computed against the dark-scheme variables and doesn't re-resolve when the variable changes mid-cascade). Re-declaring on `.scheme-light` re-anchors the property so descendants inherit the locally-resolved value.
+
+### Module → scheme mapping (per figma)
+
+| Module | Scheme |
+|---|---|
+| Hero (desktop + mobile) | default (dark surface, light fg) |
+| Video (desktop + mobile, all states) | default |
+| Yard (desktop + mobile) | `scheme-light` (light surface, dark fg) |
+
+### Dynamic tokens
+
+Both raw color tokens are overridden at runtime by `src/main.js` on init + every preset reroll (R / O / P keys), so the entire color system stays in harmony with the active spectraGL preset. The CSS static values remain as fallbacks (visible only before JS runs or on error).
+
+| Token | JS-derived value | Helper |
+|---|---|---|
+| `--color-surface` | `darkestHex(preset.colors)` — perceived-luminance min of the active palette | `darkestHex()` |
+| `--c-white` | `mixWithWhite(palette.colors[2], 0.9)` — the palette's mid color composited under 90% pure white | `mixWithWhite()` (composed as `tintedWhite()`); falls back to `brightestHex()` if `colors[2]` is missing |
+
+Why `colors[2]` and not `colors[4]` (the brightest) or `colors[3]`: all active palettes are ordered darkest → brightest. Index 4 is the accent / highlight — it occupies only the top sliver of the shader's luminance gradient and is rarely visible as a dominant tone, so tinting toward it doesn't read as palette-harmonious. Index 3 is more saturated/accent-like. Index 2 (the true mid) is the most visually-present tone in the shader render, so the foreground/light-surface tint best matches what the eye sees. (Chosen after a live A/B of `[3]` vs `[2]`.)
+
+Why mix at 10%: every channel lands in `[230, 255]`, so the value always reads as white but carries a faint tint of the palette's mid direction. Foreground contrast stays well above WCAG AA against any dark-scheme surface.
+
+Assumption: palettes have ≥3 colors. All current palettes have exactly 5 (the historical 4-color "Spectra Original" is commented out in `src/presets.js`). If a future palette ships with fewer than 3, `tintedWhite()` falls back to the brightest available color.
+
+Both tokens are written to `:root` via `documentElement.style.setProperty(...)`. `.scheme-light` containers do NOT need to override `--c-white` — they want the dynamic tint too (it's the light surface in those modules).
+
+`--color-fg` and `--color-surface` (semantic tokens) are **not** written directly by JS — they're composed from the raw tokens. JS only ever touches `--c-white` and `--color-surface`.
+
+### Idle state
+
+`.content.idle { opacity: 0.05 }` over the shader. Doesn't touch color tokens.
+
+### When to add new tokens
+
+If a module needs an additional surface (e.g. a translucent scrim, an accent), add it here as a raw + semantic pair following the same pattern. Don't introduce raw hex values inside component CSS — go through the token layer.
 
 ---
 
