@@ -22,7 +22,6 @@ export const PRESETS = [
       grain: 0.0,
       speed: 1,
       field: {
-        wiggle: 0.1,
         noiseType: "simplex",
         fractalType: "fbm",
       },
@@ -34,7 +33,7 @@ export const PRESETS = [
       foldIntensity: .1,
       foldScale: .1,
       foldSpeed: 5,
-      speed: 0.00001,
+      speed: 0.00001, // look quirk (deliberate): near-frozen drift; worley/ridged reads "fast" otherwise
       field: {
         noiseType: "worley",
         fractalType: "ridged",
@@ -47,15 +46,10 @@ export const PRESETS = [
       foldIntensity: 2,
       foldScale: .5,
       foldSpeed: 0.1,
-      rimIntensity: 0.0,
-      rimColor: "#B19EEF",
-      rimFalloff: 0.5,
       speed: 5,
-      grain: 0.0,
       field: {
         octaves: 8,
-        lacunarity: 2,
-        gain: 10.0,
+        gain: 10.0, // look quirk (deliberate): far above the usual 0..1 range
         warpStrength: 5,
         noiseType: "box",
         fractalType: "none",
@@ -65,6 +59,7 @@ export const PRESETS = [
   },
 ];
 
+// Look quirk (deliberate): every palette has 5 stops while DEFAULT_OPTIONS.colors has 4.
 export const PALETTES = [
 //   {
 //     name: "Spectra Original",

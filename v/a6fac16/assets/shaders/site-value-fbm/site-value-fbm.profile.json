@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "id": "site-value-fbm",
+  "scene": "site-value-fbm.ombra",
+  "bindings": {
+    "palette": [
+      {
+        "nodeId": "site-palette-stop-0",
+        "param": "color",
+        "key": "site-palette-stop-0-color"
+      },
+      {
+        "nodeId": "site-palette-stop-1",
+        "param": "color",
+        "key": "site-palette-stop-1-color"
+      },
+      {
+        "nodeId": "site-palette-stop-2",
+        "param": "color",
+        "key": "site-palette-stop-2-color"
+      },
+      {
+        "nodeId": "site-palette-stop-3",
+        "param": "color",
+        "key": "site-palette-stop-3-color"
+      }
+    ],
+    "fieldAlpha": {
+      "nodeId": "output",
+      "param": "alpha",
+      "key": "fragment-output-alpha"
+    },
+    "balance": {
+      "nodeId": "site-balance",
+      "param": "value",
+      "key": "site-balance-value",
+      "map": {
+        "site": [
+          -1,
+          0,
+          0.985
+        ],
+        "knob": [
+          -1,
+          0,
+          0.985
+        ]
+      }
+    },
+    "seed": [
+      {
+        "nodeId": "site-seed",
+        "param": "value",
+        "key": "site-seed-value"
+      }
+    ],
+    "time": null
+  },
+  "params": {
+    "dots": {
+      "nodeId": "site-dots",
+      "param": "pixel-size",
+      "key": "site-dots-pixel-size",
+      "devicePx": 8
+    },
+    "pixelate": {
+      "nodeId": "pixelate",
+      "param": "pixel-size",
+      "key": "pixelate-pixel-size"
+    },
+    "clockSpeed": {
+      "nodeId": "site-clock",
+      "param": "speed",
+      "key": "site-clock-speed"
+    },
+    "warp": {
+      "nodeId": "warp",
+      "param": "scale",
+      "key": "site-warp-scale",
+      "viewport": {
+        "axis": "height",
+        "divisor": 512,
+        "multiplier": 1
+      }
+    },
+    "warpColor": {
+      "nodeId": "c-warp",
+      "param": "scale",
+      "key": "site-warp-color-scale",
+      "viewport": {
+        "axis": "height",
+        "divisor": 512,
+        "multiplier": 2
+      }
+    },
+    "scrollXOutMax": {
+      "nodeId": "scroll-x",
+      "param": "out-max",
+      "key": "site-scroll-x-out-max",
+      "viewport": {
+        "axis": "height",
+        "divisor": 900,
+        "multiplier": -18
+      }
+    },
+    "scrollYOutMax": {
+      "nodeId": "scroll-y",
+      "param": "out-max",
+      "key": "site-scroll-y-out-max",
+      "viewport": {
+        "axis": "height",
+        "divisor": 900,
+        "multiplier": 459
+      }
+    }
+  },
+  "defaults": {},
+  "sceneSha256": "2aca68dbbdcf7a97ff134bacb0b1ca9e9b3648183017db88ba3c02604a102d0b"
+}

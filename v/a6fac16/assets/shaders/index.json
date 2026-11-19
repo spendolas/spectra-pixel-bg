@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "scenes": [
+    {
+      "id": "site-base",
+      "weight": 0
+    },
+    {
+      "id": "site-worley-ridged",
+      "weight": 1
+    },
+    {
+      "id": "site-value-fbm",
+      "weight": 1
+    },
+    {
+      "id": "site-simplex-fbm",
+      "weight": 1
+    },
+    {
+      "id": "site-box",
+      "weight": 1
+    }
+  ],
+  "presetMap": {
+    "default": "site-worley-ridged",
+    "rules": [
+      {
+        "noiseType": "value",
+        "fractalType": "fbm",
+        "scene": "site-value-fbm"
+      },
+      {
+        "noiseType": "simplex",
+        "fractalType": "fbm",
+        "scene": "site-simplex-fbm"
+      },
+      {
+        "noiseType": "worley",
+        "fractalType": "ridged",
+        "scene": "site-worley-ridged"
+      },
+      {
+        "noiseType": "box",
+        "fractalType": "none",
+        "scene": "site-box"
+      }
+    ]
+  }
+}

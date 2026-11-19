@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "id": "site-base",
+  "scene": "site-base.ombra",
+  "bindings": {
+    "palette": [
+      {
+        "nodeId": "site-palette",
+        "param": "stop-0",
+        "key": "site-palette-stop-0"
+      },
+      {
+        "nodeId": "site-palette",
+        "param": "stop-1",
+        "key": "site-palette-stop-1"
+      },
+      {
+        "nodeId": "site-palette",
+        "param": "stop-2",
+        "key": "site-palette-stop-2"
+      },
+      {
+        "nodeId": "site-palette",
+        "param": "stop-3",
+        "key": "site-palette-stop-3"
+      }
+    ],
+    "fieldAlpha": {
+      "nodeId": "output",
+      "param": "alpha",
+      "key": "fragment-output-alpha"
+    },
+    "balance": {
+      "nodeId": "site-balance",
+      "param": "value",
+      "key": "site-balance-value",
+      "map": {
+        "site": [
+          -1,
+          0,
+          0.985
+        ],
+        "knob": [
+          -0.7,
+          0,
+          0.65
+        ]
+      }
+    },
+    "seed": [
+      {
+        "nodeId": "site-seed",
+        "param": "value",
+        "key": "site-seed-value"
+      }
+    ],
+    "time": null
+  },
+  "params": {
+    "dots": {
+      "nodeId": "site-dots",
+      "param": "pixel-size",
+      "key": "site-dots-pixel-size"
+    },
+    "pixelate": {
+      "nodeId": "pixelate",
+      "param": "pixel-size",
+      "key": "pixelate-pixel-size"
+    },
+    "clockSpeed": {
+      "nodeId": "site-clock",
+      "param": "speed",
+      "key": "site-clock-speed"
+    }
+  },
+  "defaults": {},
+  "sceneSha256": "65bf9aa5bd9e22cacb0914ff52b154d1e164574eb6ad78c53d8d4f179078e597"
+}

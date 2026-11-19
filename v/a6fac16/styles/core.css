@@ -1,0 +1,121 @@
+      @font-face {
+        font-family: "Space Grotesk";
+        font-style: normal;
+        font-weight: 300 700;
+        font-display: swap;
+        src: url("https://cdn.jsdelivr.net/gh/floriankarsten/space-grotesk@2.0.0/fonts/woff2/SpaceGrotesk%5Bwght%5D.woff2")
+          format("woff2-variations");
+      }
+
+      :root {
+        --gutter: clamp(24px, 2.4vw, 32px);
+        --ease-snap: cubic-bezier(0.16, 1, 0.5, 1);
+        --reveal-dur: 200ms;
+        --pointer-radius: 300px;
+
+        /* Cross-module transition tokens (JS mirrors these; see anim.js). */
+        --module-dur: 700ms;
+
+        /* Raw color tokens — mirror figma variable names */
+        --c-white: #f5f7fa; /* figma: spendolas-white (dynamic at runtime) */
+        --c-shader-darkest: #160709; /* figma: spendolas-shader-darkest */
+
+        /* Semantic tokens — default = dark scheme (Hero, Video) */
+        --color-surface: var(--c-shader-darkest);
+        --color-fg: var(--c-white);
+      }
+
+      /* Light-scheme modules flip the tokens but stay TRANSPARENT — the deck's
+         premise is see-through sections over the one fixed canvas, and a light
+         module's "surface" is the washed shader itself (see Yard). */
+      .scheme-light {
+        --color-surface: var(--c-white);
+        --color-fg: var(--c-shader-darkest);
+        color: var(--color-fg);
+      }
+
+      @media (max-width: 768px) {
+        :root {
+          --pointer-radius: 200px;
+        }
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        overflow: hidden;
+        background-color: var(--color-surface);
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        font-weight: 400;
+        color: var(--color-fg);
+        font-feature-settings: "salt" 1;
+      }
+
+      #bg {
+        position: fixed;
+        inset: 0;
+      }
+      /* ---- deck / module shell ---- */
+      .deck {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+      }
+      .module {
+        position: absolute;
+        inset: 0;
+      }
+      .module.is-hidden {
+        display: none;
+      }
+
+      .content {
+        position: absolute;
+        inset: 0;
+        padding: var(--gutter);
+        pointer-events: none;
+        transition: opacity var(--dur-idle-fade, 400ms) ease;
+      }
+      .content.idle {
+        opacity: 0.05;
+      }
+      /* Video idle dim: since the backdrop split, content and mute are in
+         separate layers, so idle marks each directly. Content fades via
+         `.content.idle` above (shared with Hero); the mute dims via its --vm-dim
+         multiplier (NOT opacity) so its mix-blend-mode stays intact. */
+      .v-mute.idle {
+        --vm-dim: 0.05;
+      }
+
+      /* ---- shared type ---- */
+      .title {
+        margin: 0;
+        max-width: 928px;
+        font-size: clamp(36px, calc(4.19vw + 19.66px), 80px);
+        line-height: clamp(40px, calc(3.81vw + 25.14px), 80px);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        opacity: 0;
+        text-wrap: balance;
+      }
+      .line {
+        display: block;
+      }
+      .line-inner,
+      .reveal-inner {
+        display: inline-block;
+        will-change: transform, opacity, filter;
+        opacity: 0;
+      }
+      .char {
+        display: inline-block;
+        font-weight: 400;
+        white-space: pre;
+        transition: font-weight var(--dur-cursor-weight, 80ms) linear;
+      }
+

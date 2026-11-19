@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "id": "site-worley-ridged",
+  "scene": "site-worley-ridged.ombra",
+  "bindings": {
+    "palette": [
+      {
+        "nodeId": "site-palette-stop-0",
+        "param": "color",
+        "key": "site-palette-stop-0-color"
+      },
+      {
+        "nodeId": "site-palette-stop-1",
+        "param": "color",
+        "key": "site-palette-stop-1-color"
+      },
+      {
+        "nodeId": "site-palette-stop-2",
+        "param": "color",
+        "key": "site-palette-stop-2-color"
+      },
+      {
+        "nodeId": "site-palette-stop-3",
+        "param": "color",
+        "key": "site-palette-stop-3-color"
+      }
+    ],
+    "fieldAlpha": {
+      "nodeId": "output",
+      "param": "alpha",
+      "key": "fragment-output-alpha"
+    },
+    "balance": {
+      "nodeId": "site-balance",
+      "param": "value",
+      "key": "site-balance-value",
+      "map": {
+        "site": [
+          -1,
+          0,
+          0.985
+        ],
+        "knob": [
+          -1,
+          0,
+          0.985
+        ]
+      }
+    },
+    "seed": [
+      {
+        "nodeId": "site-seed",
+        "param": "value",
+        "key": "site-seed-value"
+      }
+    ],
+    "time": null
+  },
+  "params": {
+    "dots": {
+      "nodeId": "site-dots",
+      "param": "pixel-size",
+      "key": "site-dots-pixel-size"
+    },
+    "pixelate": {
+      "nodeId": "pixelate",
+      "param": "pixel-size",
+      "key": "pixelate-pixel-size"
+    },
+    "clockSpeed": {
+      "nodeId": "site-clock",
+      "param": "speed",
+      "key": "site-clock-speed"
+    },
+    "warp": {
+      "nodeId": "warp",
+      "param": "scale",
+      "key": "site-warp-scale",
+      "viewport": {
+        "axis": "height",
+        "divisor": 51.2,
+        "multiplier": 1
+      }
+    },
+    "warpColor": {
+      "nodeId": "c-warp",
+      "param": "scale",
+      "key": "site-warp-color-scale",
+      "viewport": {
+        "axis": "height",
+        "divisor": 51.2,
+        "multiplier": 2
+      }
+    }
+  },
+  "defaults": {},
+  "sceneSha256": "22fe22253427f4171aeb21e0b639d6e8fa1d49c39ac79b5cdebf87272d7db35e"
+}
