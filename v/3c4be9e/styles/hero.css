@@ -9,7 +9,7 @@
         -webkit-mask-image: linear-gradient(to right, #000 50%, transparent 50%);
         mask-image: linear-gradient(to right, #000 50%, transparent 50%);
         display: none;
-        z-index: 20;
+        z-index: var(--z-overlay);
         left: 0;
         top: 0;
       }
@@ -18,13 +18,6 @@
       }
 
       /* ---- Hero anchors ---- */
-      .brand,
-      .locale,
-      .cta {
-        position: absolute;
-        font-size: 16px;
-        line-height: 16px;
-      }
       .brand {
         top: var(--gutter);
         right: var(--gutter);
@@ -43,9 +36,6 @@
         color: inherit;
         text-decoration: none;
         pointer-events: auto;
-      }
-      .reveal-inner {
-        display: block;
       }
       @media (max-width: 768px) {
         .brand {

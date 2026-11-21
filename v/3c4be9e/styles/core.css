@@ -13,6 +13,33 @@
         --reveal-dur: 200ms;
         --pointer-radius: 300px;
 
+        /* CSS-backed duration tokens (cssVars.js overrides inline on :root at boot;
+           these mirror the TIMINGS defaults so CSS is correct without JS). */
+        --dur-idle-fade: 400ms;
+        --dur-teaser-fade: 400ms;
+        --dur-enter-fade: 160ms;
+        --dur-progress: 120ms;
+        --dur-mute-fade: 240ms;
+        --dur-mute-visual: 400ms;
+        --dur-shake: 360ms;
+        --dur-kb-slide: 320ms;
+        --dur-caret-blink: 1600ms;
+        --dur-cursor-weight: 80ms;
+
+        /* Type tokens */
+        --fs-title: clamp(36px, calc(4.19vw + 19.66px), 80px);
+        --lh-title: clamp(40px, calc(3.81vw + 25.14px), 80px);
+        --ls-title: -0.02em;
+        --fs-small: 16px;
+        --lh-small: 16px;
+
+        /* z-index scale */
+        --z-backdrop: 0;
+        --z-raised: 1;
+        --z-top: 2;
+        --z-deck: 10;
+        --z-overlay: 20;
+
         /* Cross-module transition tokens (JS mirrors these; see anim.js). */
         --module-dur: 700ms;
 
@@ -64,7 +91,7 @@
       .deck {
         position: fixed;
         inset: 0;
-        z-index: 10;
+        z-index: var(--z-deck);
       }
       .module {
         position: absolute;
@@ -96,10 +123,10 @@
       .title {
         margin: 0;
         max-width: 928px;
-        font-size: clamp(36px, calc(4.19vw + 19.66px), 80px);
-        line-height: clamp(40px, calc(3.81vw + 25.14px), 80px);
+        font-size: var(--fs-title);
+        line-height: var(--lh-title);
         font-weight: 400;
-        letter-spacing: -0.02em;
+        letter-spacing: var(--ls-title);
         opacity: 0;
         text-wrap: balance;
       }
@@ -108,9 +135,23 @@
       }
       .line-inner,
       .reveal-inner {
-        display: inline-block;
         will-change: transform, opacity, filter;
         opacity: 0;
+      }
+      .line-inner {
+        display: inline-block;
+      }
+      /* Anchor labels: block (was a later hero.css override of the shared rule). */
+      .reveal-inner {
+        display: block;
+      }
+      /* Shared anchor box (every mkAnchor element carries data-anchor: Hero .brand/.locale/.cta, Yard .y-anchor;
+         Video .v-corner keeps its own class on the element). */
+      [data-anchor],
+      .v-corner {
+        position: absolute;
+        font-size: var(--fs-small);
+        line-height: var(--lh-small);
       }
       .char {
         display: inline-block;
