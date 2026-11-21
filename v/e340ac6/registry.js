@@ -1,8 +1,10 @@
 // Module order for the deck. This is the single place to add/reorder modules.
-// Minimal release (release/hero-sombra): Hero only. Yard + Video are not shipped.
+// Hero + Yard release (release/hero-sombra): Video + gate are not shipped.
 
 import { createHero } from "./modules/hero.js";
+import { createYard } from "./modules/yard/index.js";
 
 export const registry = [
   createHero(),
+  createYard(),
 ];
